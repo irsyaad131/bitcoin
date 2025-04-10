@@ -9,186 +9,231 @@ import json
 import ta
 import sqlite3
 from flask_caching import Cache
+from forex_python.converter import CurrencyRates
 
 app = Flask(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache'})
+c = CurrencyRates()
 
 # Setup database
 def init_db():
     conn = sqlite3.connect('bitcoin.db')
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS recommendations
-                 (date text, type text, price real, action text, confidence text)''')
+    cur = conn.cursor()
+    cur.execute('''CREATE TABLE IF NOT EXISTS rekomendasi
+                 (tanggal text, tipe text, harga real, aksi text, confidence text)''')
     conn.commit()
     conn.close()
 
 init_db()
 
+def usd_to_idr(usd_amount):
+    try:
+        return c.convert('USD', 'IDR', usd_amount)
+    except:
+        return usd_amount * 15000  # Fallback rate jika API error
+
 @cache.cached(timeout=3600)
-def get_bitcoin_data(period='1y'):
+def get_bitcoin_data(periode='1y'):
     btc = yf.Ticker("BTC-USD")
-    hist = btc.history(period=period)
+    hist = btc.history(period=periode)
     df = pd.DataFrame(hist)
-    df = df[['Close', 'Volume']].rename(columns={'Close': 'price'})
+    df = df[['Close', 'Volume']].rename(columns={'Close': 'harga'})
     df = df.resample('D').mean().ffill()
     
-    # Calculate indicators
-    df['sma_20'] = ta.trend.sma_indicator(df['price'], window=20)
-    df['sma_50'] = ta.trend.sma_indicator(df['price'], window=50)
-    df['rsi'] = ta.momentum.rsi(df['price'], window=14)
+    # Konversi harga ke IDR
+    df['harga_idr'] = df['harga'].apply(lambda x: usd_to_idr(x))
+    
+    # Hitung indikator
+    df['sma_20'] = ta.trend.sma_indicator(df['harga'], window=20)
+    df['sma_50'] = ta.trend.sma_indicator(df['harga'], window=50)
+    df['rsi'] = ta.momentum.rsi(df['harga'], window=14)
     df['golden_cross'] = (df['sma_20'] > df['sma_50']) & (df['sma_20'].shift(1) <= df['sma_50'].shift(1))
     df['death_cross'] = (df['sma_20'] < df['sma_50']) & (df['sma_20'].shift(1) >= df['sma_50'].shift(1))
     
     return df
 
-def analyze_bitcoin(df):
-    recommendations = []
-    current_price = df['price'].iloc[-1]
+def analisis_bitcoin(df):
+    rekomendasi = []
+    harga_terkini = df['harga'].iloc[-1]
+    harga_terkini_idr = df['harga_idr'].iloc[-1]
     rsi = df['rsi'].iloc[-1]
     
-    # Golden Cross Recommendation
+    # Deteksi Golden Cross
     if df['golden_cross'].iloc[-1]:
-        recommendations.append({
-            'type': 'Golden Cross Confirmed',
-            'action': 'Allocate 50% of capital',
-            'confidence': 'High',
-            'price': current_price,
-            'date': df.index[-1].strftime('%Y-%m-%d'),
-            'details': 'SMA 20 crossed above SMA 50 indicating bullish trend'
+        rekomendasi.append({
+            'tipe': 'Golden Cross Terdeteksi',
+            'aksi': 'Alokasikan 50% modal',
+            'confidence': 'Tinggi',
+            'harga': harga_terkini,
+            'harga_idr': harga_terkini_idr,
+            'tanggal': df.index[-1].strftime('%Y-%m-%d'),
+            'detail': 'SMA 20 melewati SMA 50 ke atas, indikasi tren bullish'
         })
     
-    # Buy the Dip (RSI based)
+    # Beli saat harga turun (RSI)
     if rsi < 30:
-        dip_percentage = ((df['price'].iloc[-3] - current_price) / df['price'].iloc[-3]) * 100
-        recommendations.append({
-            'type': f'Buy the Dip (RSI {rsi:.1f})',
-            'action': f'Allocate 30% capital (Dip {dip_percentage:.1f}%)',
-            'confidence': 'High' if dip_percentage > 10 else 'Medium',
-            'price': current_price,
-            'date': df.index[-1].strftime('%Y-%m-%d'),
-            'details': f'RSI indicates oversold condition at {rsi:.1f}'
+        persentase_penurunan = ((df['harga'].iloc[-3] - harga_terkini) / df['harga'].iloc[-3]) * 100
+        rekomendasi.append({
+            'tipe': f'Beli saat Turun (RSI {rsi:.1f})',
+            'aksi': f'Alokasikan 30% modal (Turun {persentase_penurunan:.1f}%)',
+            'confidence': 'Tinggi' if persentase_penurunan > 10 else 'Sedang',
+            'harga': harga_terkini,
+            'harga_idr': harga_terkini_idr,
+            'tanggal': df.index[-1].strftime('%Y-%m-%d'),
+            'detail': f'RSI menunjukkan kondisi oversold di {rsi:.1f}'
         })
     
-    # SMA Trend Analysis
-    if current_price > df['sma_50'].iloc[-1]:
-        sma_status = {
-            'type': 'Price Above SMA 50',
-            'action': 'Hold/Buy small amounts',
-            'confidence': 'Medium',
-            'price': current_price,
-            'date': df.index[-1].strftime('%Y-%m-%d'),
-            'details': 'Price is in overall uptrend'
+    # Analisis tren SMA
+    if harga_terkini > df['sma_50'].iloc[-1]:
+        status_sma = {
+            'tipe': 'Harga di Atas SMA 50',
+            'aksi': 'Tahan/Beli dalam jumlah kecil',
+            'confidence': 'Sedang',
+            'harga': harga_terkini,
+            'harga_idr': harga_terkini_idr,
+            'tanggal': df.index[-1].strftime('%Y-%m-%d'),
+            'detail': 'Harga dalam tren naik keseluruhan'
         }
     else:
-        sma_status = {
-            'type': 'Price Below SMA 50',
-            'action': 'Be cautious with new investments',
-            'confidence': 'Low',
-            'price': current_price,
-            'date': df.index[-1].strftime('%Y-%m-%d'),
-            'details': 'Price is in overall downtrend'
+        status_sma = {
+            'tipe': 'Harga di Bawah SMA 50',
+            'aksi': 'Hati-hati dengan investasi baru',
+            'confidence': 'Rendah',
+            'harga': harga_terkini,
+            'harga_idr': harga_terkini_idr,
+            'tanggal': df.index[-1].strftime('%Y-%m-%d'),
+            'detail': 'Harga dalam tren turun keseluruhan'
         }
-    recommendations.append(sma_status)
+    rekomendasi.append(status_sma)
     
-    # Save to DB
+    # Simpan ke database
     conn = sqlite3.connect('bitcoin.db')
-    c = conn.cursor()
-    for rec in recommendations:
-        c.execute("INSERT INTO recommendations VALUES (?, ?, ?, ?, ?)",
-                 (rec['date'], rec['type'], rec['price'], rec['action'], rec['confidence']))
+    cur = conn.cursor()
+    for rec in rekomendasi:
+        cur.execute("INSERT INTO rekomendasi VALUES (?, ?, ?, ?, ?)",
+                 (rec['tanggal'], rec['tipe'], rec['harga'], rec['aksi'], rec['confidence']))
     conn.commit()
     conn.close()
     
-    return recommendations
+    return rekomendasi
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/get_recommendations', methods=['POST'])
-def get_recommendations():
+@app.route('/dapatkan_rekomendasi', methods=['POST'])
+def dapatkan_rekomendasi():
     data = request.json
-    period = data.get('period', '1y')
+    periode = data.get('periode', '1y')
     
     try:
-        df = get_bitcoin_data(period)
-        recommendations = analyze_bitcoin(df)
+        df = get_bitcoin_data(periode)
+        rekomendasi = analisis_bitcoin(df)
         
-        # Create plot
+        # Buat plot
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=df.index, y=df['price'], name='Bitcoin Price', line=dict(color='#FF9500', width=2)))
-        fig.add_trace(go.Scatter(x=df.index, y=df['sma_20'], name='SMA 20', line=dict(color='#34C759', width=1)))
-        fig.add_trace(go.Scatter(x=df.index, y=df['sma_50'], name='SMA 50', line=dict(color='#AF52DE', width=1)))
+        fig.add_trace(go.Scatter(
+            x=df.index,
+            y=df['harga_idr'],
+            name='Harga Bitcoin',
+            line=dict(color='#FF9500', width=2),
+            hovertemplate='%{y:,.0f} IDR'
+        ))
+        fig.add_trace(go.Scatter(
+            x=df.index,
+            y=df['sma_20'].apply(lambda x: usd_to_idr(x)),
+            name='SMA 20',
+            line=dict(color='#34C759', width=1),
+            hovertemplate='%{y:,.0f} IDR'
+        ))
+        fig.add_trace(go.Scatter(
+            x=df.index,
+            y=df['sma_50'].apply(lambda x: usd_to_idr(x)),
+            name='SMA 50',
+            line=dict(color='#AF52DE', width=1),
+            hovertemplate='%{y:,.0f} IDR'
+        ))
         
-        # Add golden cross markers
+        # Tambahkan marker golden cross
         cross_dates = df[df['golden_cross']].index
         if not cross_dates.empty:
             fig.add_trace(go.Scatter(
                 x=cross_dates,
-                y=df.loc[cross_dates, 'price'],
+                y=df.loc[cross_dates, 'harga_idr'],
                 mode='markers',
                 name='Golden Cross',
-                marker=dict(color='green', size=10)
+                marker=dict(color='green', size=10),
+                hovertemplate='%{y:,.0f} IDR'
             ))
         
         fig.update_layout(
-            title='Bitcoin Price Analysis',
-            xaxis_title='Date',
-            yaxis_title='Price (USD)',
+            title='Analisis Harga Bitcoin',
+            xaxis_title='Tanggal',
+            yaxis_title='Harga (IDR)',
             template='plotly_dark',
-            hovermode='x unified'
+            hovermode='x unified',
+            yaxis_tickformat=',.0f'
         )
         
         graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
         
         return jsonify({
-            'status': 'success',
-            'recommendations': recommendations,
-            'chart': graphJSON,
-            'current_price': round(df['price'].iloc[-1], 2),
-            'last_updated': df.index[-1].strftime('%Y-%m-%d')
+            'status': 'sukses',
+            'rekomendasi': rekomendasi,
+            'grafik': graphJSON,
+            'harga_terkini': round(df['harga'].iloc[-1], 2),
+            'harga_terkini_idr': round(df['harga_idr'].iloc[-1], 2),
+            'terakhir_update': df.index[-1].strftime('%Y-%m-%d')
         })
     
     except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)})
+        return jsonify({'status': 'error', 'pesan': str(e)})
 
-@app.route('/dca_simulator', methods=['POST'])
-def dca_simulator():
+@app.route('/simulator_dca', methods=['POST'])
+def simulator_dca():
     data = request.json
-    initial_investment = float(data['amount'])
-    period = data['period']
+    investasi_awal = float(data['jumlah'])
+    periode = data['periode']
     
-    df = get_bitcoin_data(period)
-    weekly_dates = df.resample('W').last().index
+    df = get_bitcoin_data(periode)
+    tanggal_mingguan = df.resample('W').last().index
     
-    results = []
+    hasil = []
     total_btc = 0
-    total_invested = 0
-    for date in weekly_dates:
-        price = df.loc[date, 'price']
-        btc_bought = initial_investment / price
-        total_btc += btc_bought
-        total_invested += initial_investment
-        results.append({
-            'date': date.strftime('%Y-%m-%d'),
-            'price': price,
-            'btc_bought': btc_bought,
-            'btc_accumulated': total_btc,
-            'investment': total_invested
+    total_investasi = 0
+    for tanggal in tanggal_mingguan:
+        harga = df.loc[tanggal, 'harga']
+        harga_idr = df.loc[tanggal, 'harga_idr']
+        btc_didapat = investasi_awal / harga
+        total_btc += btc_didapat
+        total_investasi += investasi_awal
+        hasil.append({
+            'tanggal': tanggal.strftime('%Y-%m-%d'),
+            'harga': harga,
+            'harga_idr': harga_idr,
+            'btc_didapat': btc_didapat,
+            'total_btc': total_btc,
+            'investasi': total_investasi,
+            'investasi_idr': total_investasi * 15000  # Asumsi kurs 15.000
         })
     
-    final_value = total_btc * df['price'].iloc[-1]
-    profit_loss = final_value - total_invested
-    roi = (profit_loss / total_invested) * 100
+    nilai_akhir = total_btc * df['harga'].iloc[-1]
+    nilai_akhir_idr = total_btc * df['harga_idr'].iloc[-1]
+    profit_rugi = nilai_akhir - total_investasi
+    profit_rugi_idr = nilai_akhir_idr - (total_investasi * 15000)
+    roi = (profit_rugi / total_investasi) * 100
     
     return jsonify({
-        'status': 'success',
-        'results': results,
-        'final_value': final_value,
-        'total_invested': total_invested,
-        'profit_loss': profit_loss,
+        'status': 'sukses',
+        'hasil': hasil,
+        'nilai_akhir': nilai_akhir,
+        'nilai_akhir_idr': nilai_akhir_idr,
+        'total_investasi': total_investasi,
+        'total_investasi_idr': total_investasi * 15000,
+        'profit_rugi': profit_rugi,
+        'profit_rugi_idr': profit_rugi_idr,
         'roi': roi,
-        'final_btc': total_btc
+        'total_btc': total_btc
     })
 
 if __name__ == '__main__':
