@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Investment Advisor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .card-header {
+            font-weight: 600;
+        }
+        #price-chart, #dca-chart {
+            height: 400px;
+            width: 100%;
+        }
+        .alert {
+            border-radius: 8px;
+        }
+        .btn-warning {
+            background-color: #FF9500;
+            border-color: #FF9500;
+            color: white;
+            font-weight: 500;
+        }
+        .btn-warning:hover {
+            background-color: #e68600;
+            border-color: #e68600;
+            color: white;
+        }
+        .text-warning {
+            color: #FF9500 !important;
+        }
+        .form-select:focus, .btn:focus {
+            box-shadow: 0 0 0 0.25rem rgba(255, 149, 0, 0.25);
+        }
+        .badge {
+            font-size: 0.8rem;
+            padding: 0.35em 0.65em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="text-center mb-5">
+                    <h1 class="display-4 mb-3"><i class="fab fa-bitcoin text-warning"></i> Bitcoin Investment Advisor</h1>
+                    <p class="lead">Smart analytics for Bitcoin investment decisions</p>
+                </div>
+                
+                <!-- Analysis Card -->
+                <div class="card shadow-lg mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h4 class="my-2"><i class="fas fa-chart-line me-2"></i>Bitcoin Analysis</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="period-select" class="form-label">Analysis Period:</label>
+                                <select id="period-select" class="form-select">
+                                    <option value="1mo">1 Month</option>
+                                    <option value="3mo">3 Months</option>
+                                    <option value="6mo">6 Months</option>
+                                    <option value="1y" selected>1 Year</option>
+                                    <option value="2y">2 Years</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <button id="analyze-btn" class="btn btn-warning w-100">
+                                    <i class="fas fa-chart-line me-2"></i>Run Analysis
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="chart-container" class="mb-4">
+                            <div id="price-chart"></div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card bg-dark text-white mb-4">
+                                    <div class="card-header">
+                                        <h5><i class="fas fa-dollar-sign me-2"></i>Price Information</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="price-info" class="text-center py-3">
+                                            <p class="text-muted">Click "Run Analysis" to load data</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-dark text-white">
+                                    <div class="card-header">
+                                        <h5><i class="fas fa-lightbulb me-2"></i>Investment Recommendations</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="recommendations" class="py-2">
+                                            <p class="text-muted">Analysis results will appear here</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- DCA Simulator Card -->
+                <div class="card shadow-lg mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h4 class="my-2"><i class="fas fa-calculator me-2"></i>DCA Simulator</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label">Weekly Investment (USD)</label>
+                                <input type="number" id="dca-amount" class="form-control" value="100">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Period</label>
+                                <select id="dca-period" class="form-select">
+                                    <option value="3mo">3 Months</option>
+                                    <option value="6mo" selected>6 Months</option>
+                                    <option value="1y">1 Year</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button id="run-dca" class="btn btn-primary w-100">
+                                    <i class="fas fa-play me-2"></i>Simulate
+                                </button>
+                            </div>
+                        </div>
+                        <div id="dca-results" class="mb-4"></div>
+                        <div id="dca-chart"></div>
+                    </div>
+                </div>
+                
+                <!-- Strategy Guide -->
+                <div class="card shadow-lg">
+                    <div class="card-header bg-dark text-white">
+                        <h4 class="my-2"><i class="fas fa-chess me-2"></i>Investment Strategies</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 border-warning">
+                                    <div class="card-body">
+                                        <h5><i class="fas fa-crosshairs text-success me-2"></i>Golden Cross</h5>
+                                        <p>When 20-day SMA crosses above 50-day SMA, it signals strong bullish momentum. Consider allocating 50-70% of your capital.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 border-warning">
+                                    <div class="card-body">
+                                        <h5><i class="fas fa-arrow-down text-danger me-2"></i>Buy the Dip</h5>
+                                        <p>When RSI < 30 and price drops significantly, it's a good buying opportunity. Allocate 20-30% of capital.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 border-warning">
+                                    <div class="card-body">
+                                        <h5><i class="fas fa-calendar-check text-primary me-2"></i>DCA</h5>
+                                        <p>Invest fixed amounts weekly/monthly regardless of price. Best for long-term investors with low risk tolerance.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize tooltips
+            $('[data-bs-toggle="tooltip"]').tooltip();
+            
+            // Run analysis on page load
+            $('#analyze-btn').click();
+            
+            // Analysis button click handler
+            $('#analyze-btn').click(function() {
+                const period = $('#period-select').val();
+                $(this).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Analyzing...');
+                
+                $.ajax({
+                    url: '/get_recommendations',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ period: period }),
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            // Update price info
+                            $('#price-info').html(`
+                                <h3 class="text-warning">$${response.current_price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</h3>
+                                <p class="mb-2">Last updated: ${response.last_updated}</p>
+                                <small class="text-muted">${period.toUpperCase()} period analysis</small>
+                            `);
+                            
+                            // Update recommendations
+                            if (response.recommendations.length > 0) {
+                                let recHtml = '';
+                                response.recommendations.forEach(rec => {
+                                    recHtml += `
+                                        <div class="card mb-3 border-${getConfidenceColor(rec.confidence)}">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <h5 class="card-title mb-1">${rec.type}</h5>
+                                                    <span class="badge bg-${getConfidenceColor(rec.confidence)}">
+                                                        ${rec.confidence}
+                                                    </span>
+                                                </div>
+                                                <p class="card-text mt-2"><strong>Action:</strong> ${rec.action}</p>
+                                                ${rec.details ? `<p class="card-text text-muted mb-0">${rec.details}</p>` : ''}
+                                            </div>
+                                        </div>
+                                    `;
+                                });
+                                $('#recommendations').html(recHtml);
+                            }
+                            
+                            // Render chart
+                            const chartData = JSON.parse(response.chart);
+                            Plotly.newPlot('price-chart', chartData.data, chartData.layout);
+                        }
+                    },
+                    complete: function() {
+                        $('#analyze-btn').html('<i class="fas fa-chart-line me-2"></i>Run Analysis');
+                    }
+                });
+            });
+            
+            // DCA Simulator
+            $('#run-dca').click(function() {
+                const amount = parseFloat($('#dca-amount').val());
+                const period = $('#dca-period').val();
+                
+                $(this).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Simulating...');
+                
+                $.ajax({
+                    url: '/dca_simulator',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ amount: amount, period: period }),
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            // Summary results
+                            const profitClass = response.profit_loss >= 0 ? 'text-success' : 'text-danger';
+                            const profitIcon = response.profit_loss >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+                            
+                            let html = `
+                                <div class="card bg-light mb-4">
+                                    <div class="card-body">
+                                        <div class="row text-center">
+                                            <div class="col-md-4">
+                                                <h5>Total Invested</h5>
+                                                <h4>$${response.total_invested.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</h4>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <h5>Final Value</h5>
+                                                <h4>$${response.final_value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</h4>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <h5>Profit/Loss</h5>
+                                                <h4 class="${profitClass}">
+                                                    <i class="fas ${profitIcon} me-2"></i>
+                                                    $${Math.abs(response.profit_loss).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                                    (${response.roi.toFixed(2)}%)
+                                                </h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="table-responsive mb-4">
+                                    <table class="table table-striped table-hover">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Price (USD)</th>
+                                                <th>BTC Bought</th>
+                                                <th>Total BTC</th>
+                                                <th>Investment</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                            `;
+                            
+                            response.results.forEach(item => {
+                                html += `
+                                    <tr>
+                                        <td>${item.date}</td>
+                                        <td>$${item.price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                        <td>${item.btc_bought.toFixed(6)}</td>
+                                        <td>${item.btc_accumulated.toFixed(6)}</td>
+                                        <td>$${item.investment.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                    </tr>
+                                `;
+                            });
+                            
+                            html += `</tbody></table></div>`;
+                            
+                            // DCA Chart
+                            const dates = response.results.map(item => item.date);
+                            const prices = response.results.map(item => item.price);
+                            const investments = response.results.map(item => item.investment);
+                            const values = response.results.map(item => item.btc_accumulated * response.results[response.results.length-1].price);
+                            
+                            const chart = {
+                                data: [
+                                    {
+                                        x: dates,
+                                        y: prices,
+                                        name: 'Bitcoin Price',
+                                        yaxis: 'y1',
+                                        type: 'line',
+                                        line: {color: '#FF9500'}
+                                    },
+                                    {
+                                        x: dates,
+                                        y: investments,
+                                        name: 'Total Invested',
+                                        yaxis: 'y2',
+                                        type: 'line',
+                                        line: {color: '#34C759'}
+                                    },
+                                    {
+                                        x: dates,
+                                        y: values,
+                                        name: 'Portfolio Value',
+                                        yaxis: 'y2',
+                                        type: 'line',
+                                        line: {color: '#007AFF'}
+                                    }
+                                ],
+                                layout: {
+                                    title: 'DCA Simulation Performance',
+                                    xaxis: {title: 'Date'},
+                                    yaxis: {
+                                        title: 'Price (USD)',
+                                        side: 'left',
+                                        showgrid: false
+                                    },
+                                    yaxis2: {
+                                        title: 'Amount (USD)',
+                                        side: 'right',
+                                        overlaying: 'y',
+                                        showgrid: false
+                                    },
+                                    hovermode: 'x unified',
+                                    template: 'plotly_dark'
+                                }
+                            };
+                            
+                            $('#dca-results').html(html);
+                            Plotly.newPlot('dca-chart', chart.data, chart.layout);
+                        }
+                    },
+                    complete: function() {
+                        $('#run-dca').html('<i class="fas fa-play me-2"></i>Simulate');
+                    }
+                });
+            });
+        });
+        
+        function getConfidenceColor(confidence) {
+            return {
+                'High': 'success',
+                'Medium': 'warning',
+                'Low': 'danger'
+            }[confidence] || 'secondary';
+        }
+    </script>
+</body>
+</html>
