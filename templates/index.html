@@ -19,7 +19,7 @@
         .card-header {
             font-weight: 600;
         }
-        #grafik-harga, #grafik-dca {
+        #grafik-harga {
             height: 400px;
             width: 100%;
         }
@@ -46,6 +46,14 @@
         .badge {
             font-size: 0.8rem;
             padding: 0.35em 0.65em;
+        }
+        .indicator-card {
+            border-left: 4px solid #007bff;
+            margin-bottom: 10px;
+        }
+        .indicator-value {
+            font-size: 1.1rem;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -82,6 +90,37 @@
                             </div>
                         </div>
                         
+                        <!-- Indikator Utama -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="card indicator-card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">RSI (14 hari)</h6>
+                                        <div id="rsi-value" class="indicator-value text-primary">-</div>
+                                        <small class="text-muted">Oversold <30, Overbought >70</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card indicator-card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">SMA 20 Hari</h6>
+                                        <div id="sma20-value" class="indicator-value text-success">-</div>
+                                        <small class="text-muted">Rata-rata harga 20 hari</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card indicator-card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">SMA 50 Hari</h6>
+                                        <div id="sma50-value" class="indicator-value text-purple">-</div>
+                                        <small class="text-muted">Rata-rata harga 50 hari</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div id="kontainer-grafik" class="mb-4">
                             <div id="grafik-harga"></div>
                         </div>
@@ -90,11 +129,27 @@
                             <div class="col-md-6">
                                 <div class="card bg-dark text-white mb-4">
                                     <div class="card-header">
-                                        <h5><i class="fas fa-dollar-sign me-2"></i>Informasi Harga</h5>
+                                        <h5><i class="fas fa-info-circle me-2"></i>Informasi Harga & Indikator</h5>
                                     </div>
                                     <div class="card-body">
-                                        <div id="info-harga" class="text-center py-3">
-                                            <p class="text-muted">Klik "Analisis Sekarang" untuk memuat data</p>
+                                        <div id="info-harga" class="py-3">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <p class="mb-1"><strong>Harga Terkini:</strong></p>
+                                                    <p class="mb-1"><strong>SMA 20:</strong></p>
+                                                    <p class="mb-1"><strong>SMA 50:</strong></p>
+                                                    <p class="mb-1"><strong>RSI:</strong></p>
+                                                </div>
+                                                <div class="col-6 text-end">
+                                                    <p class="mb-1" id="harga-sekarang">-</p>
+                                                    <p class="mb-1" id="sma20-sekarang">-</p>
+                                                    <p class="mb-1" id="sma50-sekarang">-</p>
+                                                    <p class="mb-1" id="rsi-sekarang">-</p>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                            <p class="mb-1"><strong>Terakhir Update:</strong></p>
+                                            <p class="mb-0" id="update-terakhir">-</p>
                                         </div>
                                     </div>
                                 </div>
@@ -108,71 +163,6 @@
                                         <div id="rekomendasi" class="py-2">
                                             <p class="text-muted">Hasil analisis akan muncul di sini</p>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Simulator DCA -->
-                <div class="card shadow-lg mb-4">
-                    <div class="card-header bg-dark text-white">
-                        <h4 class="my-2"><i class="fas fa-calculator me-2"></i>Simulator DCA</h4>
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-4">
-                            <div class="col-md-4">
-                                <label class="form-label">Investasi Mingguan (Rp)</label>
-                                <input type="number" id="jumlah-dca" class="form-control" value="1000000">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Periode</label>
-                                <select id="periode-dca" class="form-select">
-                                    <option value="3mo">3 Bulan</option>
-                                    <option value="6mo" selected>6 Bulan</option>
-                                    <option value="1y">1 Tahun</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 d-flex align-items-end">
-                                <button id="jalankan-dca" class="btn btn-primary w-100">
-                                    <i class="fas fa-play me-2"></i>Mulai Simulasi
-                                </button>
-                            </div>
-                        </div>
-                        <div id="hasil-dca" class="mb-4"></div>
-                        <div id="grafik-dca"></div>
-                    </div>
-                </div>
-                
-                <!-- Panduan Strategi -->
-                <div class="card shadow-lg">
-                    <div class="card-header bg-dark text-white">
-                        <h4 class="my-2"><i class="fas fa-chess me-2"></i>Strategi Investasi</h4>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <div class="card h-100 border-warning">
-                                    <div class="card-body">
-                                        <h5><i class="fas fa-crosshairs text-success me-2"></i>Golden Cross</h5>
-                                        <p>Ketika SMA 20 melewati SMA 50 ke atas, menandakan momentum bullish. Alokasikan 50-70% modal Anda.</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <div class="card h-100 border-warning">
-                                    <div class="card-body">
-                                        <h5><i class="fas fa-arrow-down text-danger me-2"></i>Beli Saat Turun</h5>
-                                        <p>Ketika RSI < 30 dan harga turun signifikan, ini saat tepat untuk membeli. Alokasikan 20-30% modal.</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <div class="card h-100 border-warning">
-                                    <div class="card-body">
-                                        <h5><i class="fas fa-calendar-check text-primary me-2"></i>DCA</h5>
-                                        <p>Investasi rutin dengan jumlah tetap tiap minggu/bulan. Cocok untuk investor jangka panjang.</p>
                                     </div>
                                 </div>
                             </div>
@@ -197,18 +187,33 @@
                 }).format(angka);
             }
             
-            // Format persentase
-            function formatPersen(angka) {
-                return angka.toFixed(2) + '%';
+            // Format angka USD
+            function formatUSD(angka) {
+                return new Intl.NumberFormat('en-US', { 
+                    style: 'currency', 
+                    currency: 'USD',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }).format(angka);
             }
             
             // Warna confidence
             function getWarnaConfidence(confidence) {
                 return {
+                    'Sangat Tinggi': 'danger',
                     'Tinggi': 'success',
-                    'Sedang': 'warning',
-                    'Rendah': 'danger'
+                    'Normal': 'primary',
+                    'Rendah': 'warning'
                 }[confidence] || 'secondary';
+            }
+            
+            // Warna RSI
+            function getWarnaRSI(rsi) {
+                if (rsi < 15) return 'danger';
+                if (rsi < 30) return 'success';
+                if (rsi > 70) return 'danger';
+                if (rsi > 50) return 'warning';
+                return 'primary';
             }
             
             // Analisis Bitcoin
@@ -223,12 +228,20 @@
                     data: JSON.stringify({ periode: periode }),
                     success: function(response) {
                         if (response.status === 'sukses') {
+                            // Update indikator utama
+                            $('#rsi-value').html(response.rsi.toFixed(1))
+                                .removeClass('text-primary text-success text-danger text-warning')
+                                .addClass('text-' + getWarnaRSI(response.rsi));
+                            
+                            $('#sma20-value').html(formatUSD(response.sma_20));
+                            $('#sma50-value').html(formatUSD(response.sma_50));
+                            
                             // Update info harga
-                            $('#info-harga').html(`
-                                <h3 class="text-warning">${formatIDR(response.harga_terkini_idr)}</h3>
-                                <p class="mb-2">Terakhir update: ${response.terakhir_update}</p>
-                                <small class="text-muted">Analisis periode ${periode.toUpperCase()}</small>
-                            `);
+                            $('#harga-sekarang').html(formatIDR(response.harga_terkini_idr) + '<br><small>' + formatUSD(response.harga_terkini) + '</small>');
+                            $('#sma20-sekarang').html(formatUSD(response.sma_20));
+                            $('#sma50-sekarang').html(formatUSD(response.sma_50));
+                            $('#rsi-sekarang').html(response.rsi.toFixed(1));
+                            $('#update-terakhir').html(response.terakhir_update);
                             
                             // Update rekomendasi
                             if (response.rekomendasi.length > 0) {
@@ -259,142 +272,6 @@
                     },
                     complete: function() {
                         $('#tombol-analisis').html('<i class="fas fa-chart-line me-2"></i>Analisis Sekarang');
-                    }
-                });
-            });
-            
-            // Simulator DCA
-            $('#jalankan-dca').click(function() {
-                const jumlah = parseFloat($('#jumlah-dca').val()) / 15000; // Konversi ke USD
-                const periode = $('#periode-dca').val();
-                
-                $(this).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menghitung...');
-                
-                $.ajax({
-                    url: '/simulator_dca',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({ jumlah: jumlah, periode: periode }),
-                    success: function(response) {
-                        if (response.status === 'sukses') {
-                            // Hasil ringkasan
-                            const kelasProfit = response.profit_rugi >= 0 ? 'text-success' : 'text-danger';
-                            const ikonProfit = response.profit_rugi >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
-                            
-                            let htmlHasil = `
-                                <div class="card bg-light mb-4">
-                                    <div class="card-body">
-                                        <div class="row text-center">
-                                            <div class="col-md-4">
-                                                <h5>Total Investasi</h5>
-                                                <h4>${formatIDR(response.total_investasi_idr)}</h4>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <h5>Nilai Akhir</h5>
-                                                <h4>${formatIDR(response.nilai_akhir_idr)}</h4>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <h5>Profit/Rugi</h5>
-                                                <h4 class="${kelasProfit}">
-                                                    <i class="fas ${ikonProfit} me-2"></i>
-                                                    ${formatIDR(Math.abs(response.profit_rugi_idr))}
-                                                    (${formatPersen(response.roi)})
-                                                </h4>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="table-responsive mb-4">
-                                    <table class="table table-striped table-hover">
-                                        <thead class="table-dark">
-                                            <tr>
-                                                <th>Tanggal</th>
-                                                <th>Harga (IDR)</th>
-                                                <th>BTC Didapat</th>
-                                                <th>Total BTC</th>
-                                                <th>Investasi</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                            `;
-                            
-                            response.hasil.forEach(item => {
-                                htmlHasil += `
-                                    <tr>
-                                        <td>${item.tanggal}</td>
-                                        <td>${formatIDR(item.harga_idr)}</td>
-                                        <td>${item.btc_didapat.toFixed(6)}</td>
-                                        <td>${item.total_btc.toFixed(6)}</td>
-                                        <td>${formatIDR(item.investasi_idr)}</td>
-                                    </tr>
-                                `;
-                            });
-                            
-                            htmlHasil += `</tbody></table></div>`;
-                            
-                            // Grafik DCA
-                            const tanggal = response.hasil.map(item => item.tanggal);
-                            const harga = response.hasil.map(item => item.harga_idr);
-                            const investasi = response.hasil.map(item => item.investasi_idr);
-                            const nilai = response.hasil.map(item => item.total_btc * response.hasil[response.hasil.length-1].harga_idr);
-                            
-                            const grafikDCA = {
-                                data: [
-                                    {
-                                        x: tanggal,
-                                        y: harga,
-                                        name: 'Harga Bitcoin',
-                                        yaxis: 'y1',
-                                        type: 'line',
-                                        line: {color: '#FF9500'},
-                                        hovertemplate: '%{y:,.0f} IDR'
-                                    },
-                                    {
-                                        x: tanggal,
-                                        y: investasi,
-                                        name: 'Total Investasi',
-                                        yaxis: 'y2',
-                                        type: 'line',
-                                        line: {color: '#34C759'},
-                                        hovertemplate: '%{y:,.0f} IDR'
-                                    },
-                                    {
-                                        x: tanggal,
-                                        y: nilai,
-                                        name: 'Nilai Portofolio',
-                                        yaxis: 'y2',
-                                        type: 'line',
-                                        line: {color: '#007AFF'},
-                                        hovertemplate: '%{y:,.0f} IDR'
-                                    }
-                                ],
-                                layout: {
-                                    title: 'Performa Simulasi DCA',
-                                    xaxis: {title: 'Tanggal'},
-                                    yaxis: {
-                                        title: 'Harga (IDR)',
-                                        side: 'left',
-                                        showgrid: false,
-                                        tickformat: ',.0f'
-                                    },
-                                    yaxis2: {
-                                        title: 'Jumlah (IDR)',
-                                        side: 'right',
-                                        overlaying: 'y',
-                                        showgrid: false,
-                                        tickformat: ',.0f'
-                                    },
-                                    hovermode: 'x unified',
-                                    template: 'plotly_dark'
-                                }
-                            };
-                            
-                            $('#hasil-dca').html(htmlHasil);
-                            Plotly.newPlot('grafik-dca', grafikDCA.data, grafikDCA.layout);
-                        }
-                    },
-                    complete: function() {
-                        $('#jalankan-dca').html('<i class="fas fa-play me-2"></i>Mulai Simulasi');
                     }
                 });
             });
