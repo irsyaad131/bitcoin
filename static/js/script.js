@@ -1,6 +1,7 @@
 $(document).ready(function() {
     $('#analyze-btn').click(function() {
         const period = $('#period-select').val();
+        const dcaAmount = $('#dca-amount').val();
         const $btn = $(this);
         
         // Show loading state
@@ -12,7 +13,10 @@ $(document).ready(function() {
             url: '/get_recommendations',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ period: period }),
+            data: JSON.stringify({ 
+                period: period,
+                dca_amount: parseFloat(dcaAmount)
+            }),
             success: function(response) {
                 if (response.status === 'success') {
                     // Update price info
@@ -24,6 +28,10 @@ $(document).ready(function() {
                     // Render recommendations
                     let recHtml = '';
                     response.recommendations.forEach(rec => {
+                        const progressClass = rec.action === 'sell' ? 'progress-bar-sell' : 
+                                             rec.action === 'buy' ? 'progress-bar-buy' : 'progress-bar-hold';
+                        const progressValue = rec.percentage || rec.allocation || 0;
+                        
                         recHtml += `
                             <div class="alert ${getAlertClass(rec.type)} mb-3">
                                 <div class="d-flex align-items-center">
@@ -39,14 +47,14 @@ $(document).ready(function() {
                                         </div>
                                         <p class="mb-0 mt-1"><strong>Aksi:</strong> ${rec.strength}</p>
                                         ${rec.description ? `<p class="mt-1 mb-0 small">${rec.description}</p>` : ''}
-                                        ${rec.allocation ? `<div class="mt-2">
+                                        ${progressValue > 0 ? `<div class="mt-2">
                                             <div class="progress">
-                                                <div class="progress-bar bg-warning" role="progressbar" 
-                                                    style="width: ${rec.allocation}%" 
-                                                    aria-valuenow="${rec.allocation}" 
+                                                <div class="progress-bar ${progressClass}" role="progressbar" 
+                                                    style="width: ${progressValue}%" 
+                                                    aria-valuenow="${progressValue}" 
                                                     aria-valuemin="0" 
                                                     aria-valuemax="100">
-                                                    Alokasi ${rec.allocation}%
+                                                    ${rec.action === 'sell' ? 'Jual' : 'Beli'} ${progressValue}%
                                                 </div>
                                             </div>
                                         </div>` : ''}
@@ -56,6 +64,58 @@ $(document).ready(function() {
                         `;
                     });
                     $('#recommendations').html(recHtml);
+                    
+                    // Update DCA Analysis
+                    if (response.dca_analysis) {
+                        const dca = response.dca_analysis;
+                        
+                        // Update DCA Summary
+                        $('#dca-summary').html(`
+                            <div class="col-md-4">
+                                <div class="card bg-light mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Total Investasi</h6>
+                                        <p class="h4">$${dca.summary.total_invested.toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Total BTC</h6>
+                                        <p class="h4">${dca.summary.total_btc.toFixed(6)} BTC</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Nilai Sekarang</h6>
+                                        <p class="h4">$${dca.summary.current_value.toLocaleString()}</p>
+                                        <p class="mb-0 ${dca.summary.profit >= 0 ? 'text-success' : 'text-danger'}">
+                                            ${dca.summary.profit >= 0 ? '+' : ''}${dca.summary.profit.toLocaleString()} (${dca.summary.roi.toFixed(2)}%)
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+                        
+                        // Update DCA Transactions
+                        let dcaHtml = '';
+                        dca.transactions.forEach(t => {
+                            dcaHtml += `
+                                <tr>
+                                    <td>${t.date}</td>
+                                    <td>$${t.price.toLocaleString()}</td>
+                                    <td>${t.btc_bought.toFixed(6)}</td>
+                                    <td>${t.total_btc.toFixed(6)}</td>
+                                    <td>$${t.total_invested.toLocaleString()}</td>
+                                    <td>$${t.current_value.toLocaleString()}</td>
+                                </tr>
+                            `;
+                        });
+                        $('#dca-results').html(dcaHtml);
+                    }
                     
                     // Render chart
                     const chartData = JSON.parse(response.chart);
@@ -84,7 +144,9 @@ function getAlertClass(type) {
         'Golden Cross': 'alert-success',
         'RSI Extreme Oversold': 'alert-danger',
         'RSI Oversold': 'alert-warning',
-        'RSI Normal': 'alert-info'
+        'RSI Normal': 'alert-info',
+        'RSI Overbought': 'alert-primary',
+        'RSI Extreme Overbought': 'alert-danger'
     };
     return classes[type] || 'alert-secondary';
 }
@@ -94,7 +156,9 @@ function getIconClass(type) {
         'Golden Cross': 'fas fa-crosshairs',
         'RSI Extreme Oversold': 'fas fa-arrow-down',
         'RSI Oversold': 'fas fa-arrow-circle-down',
-        'RSI Normal': 'fas fa-info-circle'
+        'RSI Normal': 'fas fa-info-circle',
+        'RSI Overbought': 'fas fa-arrow-up',
+        'RSI Extreme Overbought': 'fas fa-arrow-circle-up'
     };
     return icons[type] || 'fas fa-chart-line';
 }
