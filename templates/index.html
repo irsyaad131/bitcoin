@@ -1,81 +1,35 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Penasihat Investasi Bitcoin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body {
-            background-color: #f8f9fa;
-            color: #212529;
-        }
-        .card {
-            border: none;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .card-header {
-            font-weight: 600;
-        }
-        #grafik-harga {
-            height: 400px;
-            width: 100%;
-        }
-        .alert {
-            border-radius: 8px;
-        }
-        .btn-warning {
-            background-color: #FF9500;
-            border-color: #FF9500;
-            color: white;
-            font-weight: 500;
-        }
-        .btn-warning:hover {
-            background-color: #e68600;
-            border-color: #e68600;
-            color: white;
-        }
-        .text-warning {
-            color: #FF9500 !important;
-        }
-        .form-select:focus, .btn:focus {
-            box-shadow: 0 0 0 0.25rem rgba(255, 149, 0, 0.25);
-        }
-        .badge {
-            font-size: 0.8rem;
-            padding: 0.35em 0.65em;
-        }
-        .indicator-card {
-            border-left: 4px solid #007bff;
-            margin-bottom: 10px;
-        }
-        .indicator-value {
-            font-size: 1.1rem;
-            font-weight: bold;
-        }
-    </style>
+    <title>Bitcoin Investment Advisor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body>
+<body class="bg-light">
     <div class="container py-5">
-        <div class="row">
-            <div class="col-lg-10 mx-auto">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
                 <div class="text-center mb-5">
-                    <h1 class="display-4 mb-3"><i class="fab fa-bitcoin text-warning"></i> Penasihat Investasi Bitcoin</h1>
-                    <p class="lead">Analisis cerdas untuk keputusan investasi Bitcoin</p>
+                    <h1 class="display-4 fw-bold mb-3">
+                        <i class="fab fa-bitcoin text-warning"></i> Bitcoin Investment Advisor
+                    </h1>
+                    <p class="lead text-muted">
+                        Rekomendasi investasi Bitcoin berdasarkan analisis teknikal
+                    </p>
                 </div>
-                
-                <!-- Kartu Analisis -->
-                <div class="card shadow-lg mb-4">
-                    <div class="card-header bg-dark text-white">
-                        <h4 class="my-2"><i class="fas fa-chart-line me-2"></i>Analisis Bitcoin</h4>
+
+                <div class="card shadow-lg mb-5">
+                    <div class="card-header bg-dark text-white py-3">
+                        <h2 class="h5 mb-0"><i class="fas fa-chart-pie me-2"></i>Analisis Bitcoin</h2>
                     </div>
                     <div class="card-body">
-                        <div class="row mb-4">
+                        <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <label for="pilih-periode" class="form-label">Periode Analisis:</label>
-                                <select id="pilih-periode" class="form-select">
+                                <label for="period-select" class="form-label fw-bold">Pilih Periode Analisis:</label>
+                                <select id="period-select" class="form-select">
                                     <option value="1mo">1 Bulan</option>
                                     <option value="3mo">3 Bulan</option>
                                     <option value="6mo">6 Bulan</option>
@@ -84,84 +38,64 @@
                                 </select>
                             </div>
                             <div class="col-md-6 d-flex align-items-end">
-                                <button id="tombol-analisis" class="btn btn-warning w-100">
+                                <button id="analyze-btn" class="btn btn-warning w-100 py-2 fw-bold">
                                     <i class="fas fa-chart-line me-2"></i>Analisis Sekarang
                                 </button>
                             </div>
                         </div>
-                        
-                        <!-- Indikator Utama -->
-                        <div class="row mb-4">
-                            <div class="col-md-4">
-                                <div class="card indicator-card">
-                                    <div class="card-body">
-                                        <h6 class="card-title">RSI (14 hari)</h6>
-                                        <div id="rsi-value" class="indicator-value text-primary">-</div>
-                                        <small class="text-muted">Oversold <30, Overbought >70</small>
-                                    </div>
-                                </div>
+
+                        <div id="loading-indicator" class="text-center py-4 d-none">
+                            <div class="spinner-border text-warning" role="status">
+                                <span class="visually-hidden">Loading...</span>
                             </div>
-                            <div class="col-md-4">
-                                <div class="card indicator-card">
-                                    <div class="card-body">
-                                        <h6 class="card-title">SMA 20 Hari</h6>
-                                        <div id="sma20-value" class="indicator-value text-success">-</div>
-                                        <small class="text-muted">Rata-rata harga 20 hari</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="card indicator-card">
-                                    <div class="card-body">
-                                        <h6 class="card-title">SMA 50 Hari</h6>
-                                        <div id="sma50-value" class="indicator-value text-purple">-</div>
-                                        <small class="text-muted">Rata-rata harga 50 hari</small>
-                                    </div>
-                                </div>
-                            </div>
+                            <p class="mt-2 mb-0">Menganalisis data Bitcoin...</p>
                         </div>
-                        
-                        <div id="kontainer-grafik" class="mb-4">
-                            <div id="grafik-harga"></div>
+
+                        <div id="chart-container" class="mb-4">
+                            <div id="price-chart" class="chart"></div>
                         </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="card bg-dark text-white mb-4">
-                                    <div class="card-header">
-                                        <h5><i class="fas fa-info-circle me-2"></i>Informasi Harga & Indikator</h5>
+
+                        <div class="row g-4">
+                            <div class="col-lg-6">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="card-header bg-dark text-white">
+                                        <h3 class="h5 mb-0"><i class="fas fa-coins me-2"></i>Informasi Harga</h3>
                                     </div>
                                     <div class="card-body">
-                                        <div id="info-harga" class="py-3">
-                                            <div class="row">
-                                                <div class="col-6">
-                                                    <p class="mb-1"><strong>Harga Terkini:</strong></p>
-                                                    <p class="mb-1"><strong>SMA 20:</strong></p>
-                                                    <p class="mb-1"><strong>SMA 50:</strong></p>
-                                                    <p class="mb-1"><strong>RSI:</strong></p>
-                                                </div>
-                                                <div class="col-6 text-end">
-                                                    <p class="mb-1" id="harga-sekarang">-</p>
-                                                    <p class="mb-1" id="sma20-sekarang">-</p>
-                                                    <p class="mb-1" id="sma50-sekarang">-</p>
-                                                    <p class="mb-1" id="rsi-sekarang">-</p>
+                                        <div id="price-info" class="text-center py-3">
+                                            <div class="d-flex justify-content-center align-items-center mb-3">
+                                                <div class="price-display">
+                                                    <span id="current-price" class="h3 fw-bold text-dark">-</span>
+                                                    <span class="text-muted ms-1">USD</span>
                                                 </div>
                                             </div>
-                                            <hr>
-                                            <p class="mb-1"><strong>Terakhir Update:</strong></p>
-                                            <p class="mb-0" id="update-terakhir">-</p>
+                                            <div class="row text-start">
+                                                <div class="col-6">
+                                                    <p class="mb-1"><small class="text-muted">SMA 20:</small></p>
+                                                    <p class="mb-1"><small class="text-muted">SMA 50:</small></p>
+                                                    <p class="mb-0"><small class="text-muted">RSI:</small></p>
+                                                </div>
+                                                <div class="col-6">
+                                                    <p class="mb-1"><strong id="sma20-value">-</strong></p>
+                                                    <p class="mb-1"><strong id="sma50-value">-</strong></p>
+                                                    <p class="mb-0"><strong id="rsi-value">-</strong></p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="card bg-dark text-white">
-                                    <div class="card-header">
-                                        <h5><i class="fas fa-lightbulb me-2"></i>Rekomendasi Investasi</h5>
+                            <div class="col-lg-6">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="card-header bg-dark text-white">
+                                        <h3 class="h5 mb-0"><i class="fas fa-lightbulb me-2"></i>Rekomendasi</h3>
                                     </div>
                                     <div class="card-body">
-                                        <div id="rekomendasi" class="py-2">
-                                            <p class="text-muted">Hasil analisis akan muncul di sini</p>
+                                        <div id="recommendations" class="py-2">
+                                            <div class="text-center py-3">
+                                                <i class="fas fa-magnifying-glass fa-2x text-muted mb-3"></i>
+                                                <p class="text-muted mb-0">Klik "Analisis Sekarang" untuk mendapatkan rekomendasi</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -173,112 +107,9 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            // Format angka IDR
-            function formatIDR(angka) {
-                return new Intl.NumberFormat('id-ID', { 
-                    style: 'currency', 
-                    currency: 'IDR',
-                    maximumFractionDigits: 0
-                }).format(angka);
-            }
-            
-            // Format angka USD
-            function formatUSD(angka) {
-                return new Intl.NumberFormat('en-US', { 
-                    style: 'currency', 
-                    currency: 'USD',
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }).format(angka);
-            }
-            
-            // Warna confidence
-            function getWarnaConfidence(confidence) {
-                return {
-                    'Sangat Tinggi': 'danger',
-                    'Tinggi': 'success',
-                    'Normal': 'primary',
-                    'Rendah': 'warning'
-                }[confidence] || 'secondary';
-            }
-            
-            // Warna RSI
-            function getWarnaRSI(rsi) {
-                if (rsi < 15) return 'danger';
-                if (rsi < 30) return 'success';
-                if (rsi > 70) return 'danger';
-                if (rsi > 50) return 'warning';
-                return 'primary';
-            }
-            
-            // Analisis Bitcoin
-            $('#tombol-analisis').click(function() {
-                const periode = $('#pilih-periode').val();
-                $(this).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menganalisis...');
-                
-                $.ajax({
-                    url: '/dapatkan_rekomendasi',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({ periode: periode }),
-                    success: function(response) {
-                        if (response.status === 'sukses') {
-                            // Update indikator utama
-                            $('#rsi-value').html(response.rsi.toFixed(1))
-                                .removeClass('text-primary text-success text-danger text-warning')
-                                .addClass('text-' + getWarnaRSI(response.rsi));
-                            
-                            $('#sma20-value').html(formatUSD(response.sma_20));
-                            $('#sma50-value').html(formatUSD(response.sma_50));
-                            
-                            // Update info harga
-                            $('#harga-sekarang').html(formatIDR(response.harga_terkini_idr) + '<br><small>' + formatUSD(response.harga_terkini) + '</small>');
-                            $('#sma20-sekarang').html(formatUSD(response.sma_20));
-                            $('#sma50-sekarang').html(formatUSD(response.sma_50));
-                            $('#rsi-sekarang').html(response.rsi.toFixed(1));
-                            $('#update-terakhir').html(response.terakhir_update);
-                            
-                            // Update rekomendasi
-                            if (response.rekomendasi.length > 0) {
-                                let htmlRekomendasi = '';
-                                response.rekomendasi.forEach(rec => {
-                                    htmlRekomendasi += `
-                                        <div class="card mb-3 border-${getWarnaConfidence(rec.confidence)}">
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <h5 class="card-title mb-1">${rec.tipe}</h5>
-                                                    <span class="badge bg-${getWarnaConfidence(rec.confidence)}">
-                                                        ${rec.confidence}
-                                                    </span>
-                                                </div>
-                                                <p class="card-text mt-2"><strong>Aksi:</strong> ${rec.aksi}</p>
-                                                ${rec.detail ? `<p class="card-text text-muted mb-0">${rec.detail}</p>` : ''}
-                                            </div>
-                                        </div>
-                                    `;
-                                });
-                                $('#rekomendasi').html(htmlRekomendasi);
-                            }
-                            
-                            // Render grafik
-                            const dataGrafik = JSON.parse(response.grafik);
-                            Plotly.newPlot('grafik-harga', dataGrafik.data, dataGrafik.layout);
-                        }
-                    },
-                    complete: function() {
-                        $('#tombol-analisis').html('<i class="fas fa-chart-line me-2"></i>Analisis Sekarang');
-                    }
-                });
-            });
-            
-            // Jalankan analisis pertama kali
-            $('#tombol-analisis').click();
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="/static/js/script.js"></script>
 </body>
 </html>
