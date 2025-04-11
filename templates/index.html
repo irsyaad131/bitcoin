@@ -27,17 +27,24 @@
                     </div>
                     <div class="card-body">
                         <div class="row g-3 mb-4">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label for="period-select" class="form-label fw-bold">Pilih Periode Analisis:</label>
                                 <select id="period-select" class="form-select">
                                     <option value="1mo">1 Bulan</option>
                                     <option value="3mo">3 Bulan</option>
                                     <option value="6mo">6 Bulan</option>
-                                    <option value="1y" selected>1 Tahun</option>
+                                    <option value="1y">1 Tahun</option>
                                     <option value="2y">2 Tahun</option>
+                                    <option value="3y">3 Tahun</option>
+                                    <option value="4y">4 Tahun</option>
+                                    <option value="5y" selected>5 Tahun</option>
                                 </select>
                             </div>
-                            <div class="col-md-6 d-flex align-items-end">
+                            <div class="col-md-4">
+                                <label for="dca-amount" class="form-label fw-bold">Jumlah DCA per 4 Bulan ($):</label>
+                                <input type="number" class="form-control" id="dca-amount" value="1000" min="100">
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
                                 <button id="analyze-btn" class="btn btn-warning w-100 py-2 fw-bold">
                                     <i class="fas fa-chart-line me-2"></i>Analisis Sekarang
                                 </button>
@@ -96,6 +103,98 @@
                                                 <i class="fas fa-magnifying-glass fa-2x text-muted mb-3"></i>
                                                 <p class="text-muted mb-0">Klik "Analisis Sekarang" untuk mendapatkan rekomendasi</p>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-lg mb-5">
+                    <div class="card-header bg-dark text-white py-3">
+                        <h3 class="h5 mb-0"><i class="fas fa-calendar-alt me-2"></i>Analisis DCA (Setiap 4 Bulan)</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="dca-summary" class="row mb-4">
+                            <!-- DCA summary will be loaded here -->
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="dca-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Harga (USD)</th>
+                                        <th>BTC Dibeli</th>
+                                        <th>Total BTC</th>
+                                        <th>Total Investasi</th>
+                                        <th>Nilai Saat Itu</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dca-results">
+                                    <!-- DCA transactions will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Investment Strategies Section -->
+                <div class="card shadow-lg">
+                    <div class="card-header bg-dark text-white py-3">
+                        <h3 class="h5 mb-0"><i class="fas fa-chess-knight me-2"></i>Panduan Strategi Investasi Bitcoin</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="card h-100 strategy-card">
+                                    <div class="card-body">
+                                        <h4 class="card-title text-success"><i class="fas fa-shopping-cart me-2"></i>Strategi Beli</h4>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                RSI < 15
+                                                <span class="badge bg-success">Alokasi 40%</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                RSI < 30
+                                                <span class="badge bg-success">Alokasi 20%</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                RSI > 40
+                                                <span class="badge bg-secondary">Alokasi 10%</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100 strategy-card">
+                                    <div class="card-body">
+                                        <h4 class="card-title text-danger"><i class="fas fa-cash-register me-2"></i>Strategi Jual</h4>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                RSI > 70
+                                                <span class="badge bg-warning text-dark">Jual 20%</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                RSI > 80
+                                                <span class="badge bg-danger">Jual 40%</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12 mt-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="card-title text-primary"><i class="fas fa-dollar-sign me-2"></i>Dollar-Cost Averaging (DCA)</h4>
+                                        <p class="card-text">
+                                            Investasikan jumlah tetap secara berkala (setiap 4 bulan) tanpa mempedulikan harga untuk mengurangi dampak volatilitas.
+                                            Masukkan jumlah yang ingin diinvestasikan setiap periode di form analisis di atas.
+                                        </p>
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            <strong>Tip:</strong> Kombinasikan strategi DCA dengan rekomendasi RSI untuk hasil optimal.
                                         </div>
                                     </div>
                                 </div>
