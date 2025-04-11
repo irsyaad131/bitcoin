@@ -1,4 +1,84 @@
-/* Add to your CSS file */
+:root {
+    --primary-color: #FF9500;
+    --primary-hover: #e68600;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    --border-radius: 10px;
+    --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+body {
+    background-color: var(--light-color);
+    color: var(--dark-color);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card {
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-header {
+    font-weight: 600;
+    background-color: var(--dark-color);
+    color: white;
+}
+
+#price-chart {
+    height: 400px;
+    width: 100%;
+    border-radius: var(--border-radius);
+}
+
+.alert {
+    border-radius: var(--border-radius);
+    border-left: 4px solid transparent;
+}
+
+.alert-success {
+    border-left-color: var(--success-color);
+}
+
+.alert-danger {
+    border-left-color: var(--danger-color);
+}
+
+.alert-warning {
+    border-left-color: var(--warning-color);
+}
+
+.alert-info {
+    border-left-color: var(--info-color);
+}
+
+.btn-warning {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    font-weight: 500;
+}
+
+.btn-warning:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+    color: white;
+}
+
+.text-warning {
+    color: var(--primary-color) !important;
+}
+
 .progress {
     height: 24px;
     border-radius: 12px;
@@ -9,13 +89,20 @@
     border-radius: 12px;
     font-size: 0.8rem;
     font-weight: 500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: width 0.6s ease;
+    background-color: var(--primary-color);
 }
 
-/* Color coding for different allocation levels */
-.progress-bar.bg-warning {
-    background-color: #FF9500 !important;
+.price-display {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+@media (max-width: 768px) {
+    #price-chart {
+        height: 300px;
+    }
+    
+    .price-display {
+        font-size: 2rem;
+    }
 }
